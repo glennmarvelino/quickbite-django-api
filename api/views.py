@@ -13,17 +13,14 @@ class MenuList(APIView):
 #get all+search+filter
     def get(self, request):
         query = {}
-
         restaurant = request.GET.get("restaurant")
         category = request.GET.get("category")
         available = request.GET.get("available")
 
         if restaurant:
             query["restaurant_name"] = restaurant
-
         if category:
             query["category"] = category
-
         if available:
             query["is_available"] = available.lower() == "true"
 
@@ -31,14 +28,12 @@ class MenuList(APIView):
         for menu in collection.find(query):
             menu["_id"] = str(menu["_id"])
             menus.append(menu)
-
         return Response(menus)
 
 #post/api/menus
 #create menu
     def post(self, request):
         data = request.data
-
         required = [
             "restaurant_name",
             "menu_name",
@@ -52,30 +47,20 @@ class MenuList(APIView):
         for field in required:
             if field not in data:
                 return Response({"error": f"{field} is required"}, status=400)
-
         data["created_at"] = datetime.utcnow()
-
         result = collection.insert_one(data)
-
         data["_id"] = str(result.inserted_id)
-
         return Response(data, status=201)
 
-
-
 class MenuDetail(APIView):
-
 #get/api/menus/id
     def get(self, request, id):
         menu = collection.find_one({"_id": ObjectId(id)})
 
         if not menu:
             return Response({"error": "Menu not found"}, status=404)
-
         menu["_id"] = str(menu["_id"])
-
         return Response(menu)
-
 
 #put/api/menus/id
     def put(self, request, id):
@@ -86,17 +71,13 @@ class MenuDetail(APIView):
 
         if result.matched_count == 0:
             return Response({"error": "Menu not found"}, status=404)
-
         menu = collection.find_one({"_id": ObjectId(id)})
         menu["_id"] = str(menu["_id"])
-
         return Response(menu)
-
 
 #delete/api/menus/id
     def delete(self, request, id):
         result = collection.delete_one({"_id": ObjectId(id)})
-
         if result.deleted_count == 0:
             return Response({"error": "Menu not found"}, status=404)
 
